@@ -1,17 +1,17 @@
 # Use the official .NET SDK image for building the app
-FROM mcr.microsoft.com/dotnet/sdk:3.1 AS build
+FROM mcr.microsoft.com/dotnet/sdk:3.1.100 AS build
 WORKDIR /app
 
 # Copy csproj and restore as distinct layers
 COPY *.csproj ./
 RUN dotnet restore
 
-# Copy everything else and build
+# Copy everything else and build ||# Copy the rest of the application source code.
 COPY . ./
 RUN dotnet publish -c Release -o out
 
 # Use the official ASP.NET Core runtime image for running the app
-FROM mcr.microsoft.com/dotnet/aspnet:3.1 AS runtime
+FROM mcr.microsoft.com/dotnet/aspnet:3.1.100 AS runtime
 WORKDIR /app
 COPY --from=build /app/out ./
 
