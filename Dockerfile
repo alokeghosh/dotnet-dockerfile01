@@ -18,4 +18,4 @@ COPY --from=build /app/out ./
 # Expose port (change if your app uses a different port)
 EXPOSE 80
 
-ENTRYPOINT ["dotnet", "YourApp.dll"]
+ENTRYPOINT ["dotnet", "samplewebapi.dll"]
