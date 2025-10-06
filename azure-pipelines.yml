@@ -51,3 +51,17 @@ stages:
         PathtoPublish: '$(Build.ArtifactStagingDirectory)'
         ArtifactName: 'drop'
         publishLocation: 'Container'
+
+- stage: Deploy_in_aks
+  displayName: "Release Stage"
+  pool:
+    name: alokeagent
+  jobs:
+  - deployment: deploy_job
+    environment: 'aks-test'
+    strategy:
+        runOnce:
+          deploy:
+            steps:
+            -  
+
