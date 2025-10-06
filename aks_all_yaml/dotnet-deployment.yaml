@@ -20,7 +20,7 @@ spec:
     spec:
       containers:
         - name: dotnet-app-container
-          image: agpocacr.azurecr.io/dotnetdockerfile:457
+          image: agpocacr.azurecr.io/dotnetdockerfile:#{Build.BuildId}#
           ports:
             - containerPort: 80
 ---
