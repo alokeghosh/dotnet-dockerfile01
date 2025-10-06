@@ -38,6 +38,9 @@ stages:
         containerRegistry: $(dockerRegistryServiceConnection)
         tags: |
           $(tag)
+    - task: CmdLine@2
+      inputs:
+        script: 'docker rmi -f agpocacr.azurecr.io/dotnetdockerfile:$(Build.BuildId)'
     - task: CopyFiles@2
       inputs:
         SourceFolder: '$(System.DefaultWorkingDirectory)/aks_all_yaml'
