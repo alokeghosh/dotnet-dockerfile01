@@ -56,6 +56,7 @@ stages:
   displayName: "Release Stage"
   pool:
     name: alokeagent
+    vmImage: $(vmImageName)
   jobs:
   - deployment: deploy_job
     environment: 'aks-test'
