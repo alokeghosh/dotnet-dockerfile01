@@ -64,6 +64,7 @@ stages:
           deploy:
             steps:
             - task: replacetokens@6
+              displayName: 'replace token'
               inputs:
                 root: '$(Pipeline.Workspace)/drop'
                 sources: 'dotnet-deployment.yaml'
