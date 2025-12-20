@@ -49,7 +49,7 @@ stages:
       inputs:
         targetType: 'inline'
         script: |
-          sed -i "s|globalacrdc/alokeghoshdotnetdockerfile.*|globalacrdc/alokeghoshdotnetdockerfile:$(Build.BuildId)|g" azure-vmss/cloud-init.txt 
+          sed -i "s|globalacrdc.azurecr.io/alokeghoshdotnetdockerfile.*|globalacrdc.azurecr.io/alokeghoshdotnetdockerfile:$(Build.BuildId)|g" azure-vmss/cloud-init.txt 
 
 # 2. Copy the modified file to the Staging Directory
     - task: CopyFiles@2
