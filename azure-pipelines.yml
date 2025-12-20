@@ -41,6 +41,11 @@ stages:
     - task: CmdLine@2
       inputs:
         script: 'docker rmi -f globalacrdc.azurecr.io/alokeghoshdotnetdockerfile:$(Build.BuildId)'
+    - task: Bash@3
+      displayName: update the  manifest file for container image
+      inputs:
+        filePath: 'scripts/updateaksManifests.sh'
+        arguments: '$(imageRepository) $(tag)'
     - task: CopyFiles@2
       inputs:
         SourceFolder: '$(System.DefaultWorkingDirectory)/azure-vmss'
