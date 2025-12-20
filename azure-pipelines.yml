@@ -55,7 +55,7 @@ stages:
     - task: CopyFiles@2
       displayName: 'Copy updated file to staging'
       inputs:
-        SourceFolder: '$(Build.SourcesDirectory)'
+        SourceFolder: '$(System.DefaultWorkingDirectory)'
         Contents: 'azure-vmss/cloud-init.txt'
         TargetFolder: '$(Build.ArtifactStagingDirectory)'
 
