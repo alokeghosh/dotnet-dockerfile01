@@ -104,7 +104,8 @@ stages:
                 az vmss update \
                   --resource-group POC-AG \
                   --name devops-vmss \
-                  --set virtualMachineProfile.osProfile.customData=$(base64 -w 0 "$FILE_PATH")
+                  #--set virtualMachineProfile.osProfile.customData=$(base64 -w 0 "$FILE_PATH")
+                  --set virtualMachineProfile.userData=$(base64 -w 0 "$FILE_PATH")
                 
                 # IMPORTANT: Upgrade instances to apply the new model
                 echo "Upgrading instances to apply new configuration..."
