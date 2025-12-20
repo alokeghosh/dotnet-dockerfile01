@@ -5,13 +5,17 @@ packages:
 runcmd:
   - systemctl enable docker
   - systemctl start docker
+  # Solution A: Grant group permissions to the socket || the socket permission IMMEDIATELY (This is the real fix)
+  - usermod -aG docker azureadmin
+  - chown root:docker /var/run/docker.sock
+  - chmod 660 /var/run/docker.sock
   # Replace <acrLoginServer>, <servicePrincipalId>, and <servicePrincipalPassword>
   # IMPORTANT: Use a secure method like Azure Key Vault and Managed Identity 
   # to inject secrets instead of plain text in production.
   #- docker login <acrLoginServer> -u <servicePrincipalId> -p '<servicePrincipalPassword>'
-  - docker login globalacrdc -u 3ad22b0e-3e4d-487a-9496-88024a3fe4de -p 'Dh28Q~nFrcK.IQqgcxrm5xOwN9ZchFqKrE3BraI9'
+  - docker login globalacrdc.azurecr.io -u 3ad22b0e-3e4d-487a-9496-88024a3fe4de -p Dh28Q~nFrcK.IQqgcxrm5xOwN9ZchFqKrE3BraI9
   # Replace <acrLoginServer>, <imageName>, and <tag>
   #- docker pull <acrLoginServer>/<imageName>:<tag>
-  - docker pull globalacrdc/alokeghoshdotnetdockerfile:<tag>
+  - docker pull globalacrdc.azurecr.io/alokeghoshdotnetdockerfile:501
   #- docker run -d -p 80:80 <acrLoginServer>/<imageName>:<tag>
-  - docker run -d -p 80:80 globalacrdc/alokeghoshdotnetdockerfile:<tag>
+  - docker run -d -p 80:80 globalacrdc.azurecr.io/alokeghoshdotnetdockerfile:501
