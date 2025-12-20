@@ -13,5 +13,5 @@ runcmd:
   # Replace <acrLoginServer>, <imageName>, and <tag>
   #- docker pull <acrLoginServer>/<imageName>:<tag>
   #- docker pull globalacrdc/alokeghoshdotnetdockerfile:487
-  #- docker run -d -p 80:80 <acrLoginServer>/<imageName>:<tag>
-  #- docker run -d -p 80:80 globalacrdc/alokeghoshdotnetdockerfile:487
+  - docker run -d -p 80:80 <acrLoginServer>/<imageName>:<tag>
+  - docker run -d -p 80:80 globalacrdc/alokeghoshdotnetdockerfile:487
