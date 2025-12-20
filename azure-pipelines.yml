@@ -47,11 +47,6 @@ stages:
         targetType: 'inline'
         script: |
           sed -i "s|globalacrdc/alokeghoshdotnetdockerfile.*|globalacrdc/alokeghoshdotnetdockerfile:$(Build.BuildId)|g" azure-vmss/cloud-init.txt 
-    - task: CopyFiles@2
-      inputs:
-        SourceFolder: '$(System.DefaultWorkingDirectory)/azure-vmss'
-        Contents: '**'
-        TargetFolder: '$(Build.ArtifactStagingDirectory)'
     - task: PublishBuildArtifacts@1 
       inputs:
         PathtoPublish: '$(Build.ArtifactStagingDirectory)/azure-vmss'
