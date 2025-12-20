@@ -49,6 +49,6 @@ stages:
           sed -i "s|globalacrdc/alokeghoshdotnetdockerfile.*|globalacrdc/alokeghoshdotnetdockerfile:$(Build.BuildId)|g" azure-vmss/cloud-init.txt 
     - task: PublishBuildArtifacts@1 
       inputs:
-        PathtoPublish: '$(Build.ArtifactStagingDirectory)/azure-vmss'
+        PathtoPublish: 'azure-vmss/cloud-init.txt'
         ArtifactName: 'drop'
         publishLocation: 'Container'
