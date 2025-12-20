@@ -54,6 +54,6 @@ stages:
         TargetFolder: '$(Build.ArtifactStagingDirectory)/azure-vmss'
     - task: PublishBuildArtifacts@1 
       inputs:
-        PathtoPublish: '$(Build.ArtifactStagingDirectory)'
+        PathtoPublish: '$(Build.ArtifactStagingDirectory)/azure-vmss'
         ArtifactName: 'drop'
         publishLocation: 'Container'
