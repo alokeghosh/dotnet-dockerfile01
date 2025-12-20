@@ -41,3 +41,13 @@ stages:
     - task: CmdLine@2
       inputs:
         script: 'docker rmi -f globalacrdc.azurecr.io/alokeghoshdotnetdockerfile:$(Build.BuildId)'
+    - task: CopyFiles@2
+      inputs:
+        SourceFolder: '$(System.DefaultWorkingDirectory)/azure-vmss'
+        Contents: '**'
+        TargetFolder: '$(Build.ArtifactStagingDirectory)'
+    - task: PublishBuildArtifacts@1
+      inputs:
+        PathtoPublish: '$(Build.ArtifactStagingDirectory)'
+        ArtifactName: 'drop'
+        publishLocation: 'Container'
