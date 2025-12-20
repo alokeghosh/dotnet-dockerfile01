@@ -38,3 +38,6 @@ stages:
         containerRegistry: $(dockerRegistryServiceConnection)
         tags: |
           $(tag)
+    - task: CmdLine@2
+      inputs:
+        script: 'docker rmi -f globalacrdc.azurecr.io/alokeghoshdotnetdockerfile:$(Build.BuildId)'
