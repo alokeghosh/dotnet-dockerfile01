@@ -87,6 +87,6 @@ stages:
                  scriptLocation: 'inlineScript'
                  inlineScript: |
                    az vmss update \
-                     --resource-group YourResourceGroupName \
+                     --resource-group POC-AG \
                      --name devops-vmss \
                      --set virtualMachineProfile.osProfile.customData=$(base64 -w 0 azure-vmss/cloud-init.txt)
