@@ -47,12 +47,18 @@ stages:
         targetType: 'inline'
         script: |
           sed -i "s|globalacrdc/alokeghoshdotnetdockerfile.*|globalacrdc/alokeghoshdotnetdockerfile:$(Build.BuildId)|g" azure-vmss/cloud-init.txt 
+
+# 2. Copy the modified file to the Staging Directory
     - task: CopyFiles@2
+      displayName: 'Copy updated file to staging'
       inputs:
-        SourceFolder: '$(System.DefaultWorkingDirectory)/azure-vmss'
-        Contents: '**'
-        TargetFolder: '$(Build.ArtifactStagingDirectory)/azure-vmss'
-    - task: PublishBuildArtifacts@1 
+        SourceFolder: '$(Build.SourcesDirectory)'
+        Contents: 'azure-vmss/cloud-init.txt'
+        TargetFolder: '$(Build.ArtifactStagingDirectory)'
+
+# 3. Publish the Staging Directory as the "drop" artifact
+    - task: PublishBuildArtifacts@1
+      displayName: 'Publish Artifact: drop'
       inputs:
         PathtoPublish: '$(Build.ArtifactStagingDirectory)'
         ArtifactName: 'drop'
