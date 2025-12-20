@@ -51,7 +51,7 @@ stages:
       inputs:
         SourceFolder: '$(System.DefaultWorkingDirectory)/azure-vmss'
         Contents: '**'
-        TargetFolder: '$(Build.ArtifactStagingDirectory)'
+        TargetFolder: '$(Build.ArtifactStagingDirectory)/azure-vmss'
     - task: PublishBuildArtifacts@1 
       inputs:
         PathtoPublish: '$(Build.ArtifactStagingDirectory)'
