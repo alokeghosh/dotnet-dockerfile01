@@ -66,3 +66,27 @@ stages:
         PathtoPublish: '$(Build.ArtifactStagingDirectory)'
         ArtifactName: 'drop'
         publishLocation: 'Container'
+
+- stage: Deploy_in_vmss
+  displayName: "Release Stage"
+  pool:
+    name: alokeagent
+    vmImage: $(vmImageName)
+  jobs:
+  - deployment: deploy_job
+    environment: 'vmss-test'
+    strategy:
+        runOnce:
+           deploy:
+             steps:
+             - task: AzureCLI@2
+               displayName: 'Update VMSS Custom Data'
+               inputs:
+                 azureSubscription: 'Microsoft Azure Sponsorship(0bc60bf9-dd50-43e4-a755-be125a9042d4)'
+                 scriptType: 'bash'
+                 scriptLocation: 'inlineScript'
+                 inlineScript: |
+                   az vmss update \
+                     --resource-group YourResourceGroupName \
+                     --name devops-vmss \
+                     --set virtualMachineProfile.osProfile.customData=$(base64 -w 0 azure-vmss/cloud-init.txt)
