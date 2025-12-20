@@ -38,9 +38,12 @@ stages:
         containerRegistry: $(dockerRegistryServiceConnection)
         tags: |
           $(tag)
+## 1. doaker image delete from self hosted agent vm
     - task: CmdLine@2
       inputs:
         script: 'docker rmi -f globalacrdc.azurecr.io/alokeghoshdotnetdockerfile:$(Build.BuildId)'
+
+## 1. Update the tag in the file
     - task: Bash@3
       displayName: update the  build tag number in cloud-init.txt 
       inputs:
