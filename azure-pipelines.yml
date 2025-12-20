@@ -42,10 +42,11 @@ stages:
       inputs:
         script: 'docker rmi -f globalacrdc.azurecr.io/alokeghoshdotnetdockerfile:$(Build.BuildId)'
     - task: Bash@3
-      displayName: update the  manifest file for container image
+      displayName: update the  build tag number in cloud-init.txt 
       inputs:
-        filePath: 'scripts/updateaksManifests.sh'
-        arguments: '$(tag)'
+        targetType: 'inline'
+        script: |
+          sed -i "s|globalacrdc/alokeghoshdotnetdockerfile.*|globalacrdc/alokeghoshdotnetdockerfile:$(Build.BuildId)|g" azure-vmss/cloud-init.txt 
     - task: CopyFiles@2
       inputs:
         SourceFolder: '$(System.DefaultWorkingDirectory)/azure-vmss'
