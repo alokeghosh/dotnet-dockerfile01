@@ -67,8 +67,11 @@ stages:
         ArtifactName: 'drop'
         publishLocation: 'Container'
 
+# ... (Build Stage remains the same) ...
+
 - stage: Deploy_in_vmss
   displayName: "Release Stage"
+  dependsOn: Build # Ensures build finishes first
   pool:
     name: alokeagent
     vmImage: $(vmImageName)
@@ -76,17 +79,33 @@ stages:
   - deployment: deploy_job
     environment: 'vmss-test'
     strategy:
-        runOnce:
-           deploy:
-             steps:
-             - task: AzureCLI@2
-               displayName: 'Update VMSS Custom Data'
-               inputs:
-                 azureSubscription: 'Microsoft Azure Sponsorship(0bc60bf9-dd50-43e4-a755-be125a9042d4)'
-                 scriptType: 'bash'
-                 scriptLocation: 'inlineScript'
-                 inlineScript: |
-                   az vmss update \
-                     --resource-group POC-AG \
-                     --name devops-vmss \
-                     --set virtualMachineProfile.osProfile.customData=$(base64 -w 0 azure-vmss/cloud-init.txt)
+      runOnce:
+        deploy:
+          steps:
+          # 1. NEW: Download the "drop" artifact published in the Build stage
+          - download: current
+            artifact: drop
+
+          # 2. Update the VMSS
+          - task: AzureCLI@2
+            displayName: 'Update VMSS Custom Data'
+            inputs:
+              azureSubscription: 'Microsoft Azure Sponsorship(0bc60bf9-dd50-43e4-a755-be125a9042d4)'
+              scriptType: 'bash'
+              scriptLocation: 'inlineScript'
+              inlineScript: |
+                # Note: Artifacts are downloaded into $(Pipeline.Workspace)/<artifactName>
+                # The path will be: $(Pipeline.Workspace)/drop/azure-vmss/cloud-init.txt
+                
+                FILE_PATH="$(Pipeline.Workspace)/drop/azure-vmss/cloud-init.txt"
+                
+                echo "Updating VMSS with file from: $FILE_PATH"
+                
+                az vmss update \
+                  --resource-group POC-AG \
+                  --name devops-vmss \
+                  --set virtualMachineProfile.osProfile.customData=$(base64 -w 0 "$FILE_PATH")
+                
+                # IMPORTANT: Upgrade instances to apply the new model
+                echo "Upgrading instances to apply new configuration..."
+                az vmss update-instances --resource-group POC-AG --name devops-vmss --instance-ids "*"
