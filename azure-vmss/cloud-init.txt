@@ -18,4 +18,4 @@ runcmd:
   #- docker pull <acrLoginServer>/<imageName>:<tag>
   - docker pull globalacrdc.azurecr.io/alokeghoshdotnetdockerfile:<tag>
   #- docker run -d -p 80:80 <acrLoginServer>/<imageName>:<tag>
-  - docker run -d -p 80:80 globalacrdc.azurecr.io/alokeghoshdotnetdockerfile:<tag> --name my-web-app
+  - docker run -d --name myapp -p 80:80 globalacrdc.azurecr.io/alokeghoshdotnetdockerfile:<tag>
