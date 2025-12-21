@@ -97,14 +97,10 @@ stages:
                 VMSS_NAME="devops-vmss"
 
                 echo "Step 1: Updating VMSS Model with new Custom Data from: $FILE_PATH"
-                az vmss update \
-                  --resource-group $RG_NAME \
-                  --name $VMSS_NAME \
-                  --set virtualMachineProfile.osProfile.customData=$(base64 -w 0 < $FILE_PATH)
-
-                echo "Step 2: Triggering upgrade on all instances to apply new image tag"
-                # Using '*' updates all instances. In production, consider a rolling batch.
-                az vmss update-instances \
-                  --resource-group $RG_NAME \
-                  --name $VMSS_NAME \
-                  --instance-ids "*"
+                az vmss extension set \
+                  --resource-group POC-AG \
+                  --vmss-name devops-vmss \
+                  --name customScript \
+                  --publisher Microsoft.Azure.Extensions \
+                  --version 2.1 \
+                  --settings '{"commandToExecute": "docker pull globalacrdc.azurecr.io/alokeghoshdotnetdockerfile:$(Build.BuildId) && docker run -d -p 80:80 globalacrdc.azurecr.io/alokeghoshdotnetdockerfile:$(Build.BuildId)"}'
