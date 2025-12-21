@@ -1,7 +1,4 @@
-# Docker
-# Build and push an image to Azure Container Registry
-# https://docs.microsoft.com/azure/devops/pipelines/languages/docker
-
+# Docker: Build and push an image to Azure Container Registry
 trigger:
   none
 
@@ -9,14 +6,11 @@ resources:
 - repo: self
 
 variables:
-  # Container registry service connection established during pipeline creation
   dockerRegistryServiceConnection: '9b1f8363-6b3a-4ee6-9ab9-50b043ec189d'
   imageRepository: 'alokeghoshdotnetdockerfile'
   containerRegistry: 'globalacrdc.azurecr.io'
   dockerfilePath: '$(Build.SourcesDirectory)/Dockerfile'
   tag: '$(Build.BuildId)'
-
-  # Agent VM image name
   vmImageName: 'ubuntu-ag'
 
 stages:
@@ -27,10 +21,9 @@ stages:
     displayName: Build
     pool:
       name: alokeagent
-      vmImage: $(vmImageName)
     steps:
     - task: Docker@2
-      displayName: Build and push an image to container registry
+      displayName: Build and push
       inputs:
         command: buildAndPush
         repository: $(imageRepository)
@@ -38,41 +31,17 @@ stages:
         containerRegistry: $(dockerRegistryServiceConnection)
         tags: |
           $(tag)
-## 1. doaker image delete from self hosted agent vm
+
     - task: CmdLine@2
+      displayName: Cleanup local image
       inputs:
-        script: 'docker rmi -f globalacrdc.azurecr.io/alokeghoshdotnetdockerfile:$(Build.BuildId)'
-
-## 1. Update the tag in the file
-    - task: Bash@3
-      displayName: update the  build tag number in cloud-init.txt 
-      inputs:
-        targetType: 'inline'
-        script: |
-          sed -i "s|globalacrdc.azurecr.io/alokeghoshdotnetdockerfile.*|globalacrdc.azurecr.io/alokeghoshdotnetdockerfile:$(Build.BuildId)|g" azure-vmss/cloud-init.txt 
-
-# 2. Copy the modified file to the Staging Directory
-    - task: CopyFiles@2
-      displayName: 'Copy updated file to staging'
-      inputs:
-        SourceFolder: '$(System.DefaultWorkingDirectory)'
-        Contents: 'azure-vmss/cloud-init.txt'
-        TargetFolder: '$(Build.ArtifactStagingDirectory)'
-
-# 3. Publish the Staging Directory as the "drop" artifact
-    - task: PublishBuildArtifacts@1
-      displayName: 'Publish Artifact: drop'
-      inputs:
-        PathtoPublish: '$(Build.ArtifactStagingDirectory)'
-        ArtifactName: 'drop'
-        publishLocation: 'Container'
+        script: 'docker rmi -f $(containerRegistry)/$(imageRepository):$(Build.BuildId)'
 
 - stage: Deploy_in_vmss
   displayName: "Release Stage"
-  dependsOn: Build # Ensures build finishes first
+  dependsOn: Build
   pool:
     name: alokeagent
-    vmImage: $(vmImageName)
   jobs:
   - deployment: deploy_job
     environment: 'vmss-test'
@@ -80,27 +49,36 @@ stages:
       runOnce:
         deploy:
           steps:
-          # 1. NEW: Download the "drop" artifact published in the Build stage
           - download: current
             artifact: drop
 
-          # 2. Update the VMSS
           - task: AzureCLI@2
-            displayName: 'Update VMSS Custom Data'
+            displayName: 'Update VMSS via Custom Script Extension'
             inputs:
               azureSubscription: 'Microsoft Azure Sponsorship(0bc60bf9-dd50-43e4-a755-be125a9042d4)'
               scriptType: 'bash'
               scriptLocation: 'inlineScript'
               inlineScript: |
-                FILE_PATH="$(Pipeline.Workspace)/drop/azure-vmss/cloud-init.txt"
+                # Note: These lines MUST be indented relative to the pipe |
                 RG_NAME="POC-AG"
                 VMSS_NAME="devops-vmss"
+                IMAGE="globalacrdc.azurecr.io/alokeghoshdotnetdockerfile:$(Build.BuildId)"
 
-                echo "Step 1: Updating VMSS Model with new Custom Data from: $FILE_PATH"
+                echo "Updating VMSS Extension with image: $IMAGE"
+
                 az vmss extension set \
-                  --resource-group POC-AG \
-                  --vmss-name devops-vmss \
+                  --resource-group "$RG_NAME" \
+                  --vmss-name "$VMSS_NAME" \
                   --name customScript \
                   --publisher Microsoft.Azure.Extensions \
                   --version 2.1 \
-                  --settings '{"commandToExecute": "docker pull globalacrdc.azurecr.io/alokeghoshdotnetdockerfile:$(Build.BuildId) && docker run -d -p 80:80 globalacrdc.azurecr.io/alokeghoshdotnetdockerfile:$(Build.BuildId)"}'
+                  --force-update-tag $(date +%s) \
+                  --settings "{
+                    \"commandToExecute\": \"docker stop myapp || true && docker rm myapp || true && docker pull $IMAGE && docker run -d --name myapp -p 80:80 --restart always $IMAGE\"
+                  }"
+
+                echo "Triggering instance upgrade..."
+                az vmss update-instances \
+                  --resource-group "$RG_NAME" \
+                  --name "$VMSS_NAME" \
+                  --instance-ids '*'
