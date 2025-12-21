@@ -69,7 +69,7 @@ stages:
 
 - stage: Deploy_in_vmss
   displayName: "Release Stage"
-  dependsOn: Build
+  dependsOn: Build # Ensures build finishes first
   pool:
     name: alokeagent
     vmImage: $(vmImageName)
@@ -80,26 +80,29 @@ stages:
       runOnce:
         deploy:
           steps:
-          # 1. Update the VMSS Image only (This is allowed)
-          - task: AzureVmssDeployment@1
-            displayName: 'Update VMSS Image Tag'
-            inputs:
-              azureSubscription: 'Microsoft Azure Sponsorship(0bc60bf9-dd50-43e4-a755-be125a9042d4)'
-              action: 'Update image'
-              vmssName: 'devops-vmss'
-              vmssOsType: 'Linux'
-              # This points to your ACR image with the new Build ID tag
-              imageUrl: 'globalacrdc.azurecr.io/alokeghoshdotnetdockerfile:$(Build.BuildId)'
+          # 1. NEW: Download the "drop" artifact published in the Build stage
+          - download: current
+            artifact: drop
 
-          # 2. Force the instances to pick up the new image
+          # 2. Update the VMSS
           - task: AzureCLI@2
-            displayName: 'Apply Update to Instances'
+            displayName: 'Update VMSS Custom Data'
             inputs:
               azureSubscription: 'Microsoft Azure Sponsorship(0bc60bf9-dd50-43e4-a755-be125a9042d4)'
               scriptType: 'bash'
               scriptLocation: 'inlineScript'
               inlineScript: |
-                az vmss update-instances \
+                # Note: Artifacts are downloaded into $(Pipeline.Workspace)/<artifactName>
+                # The path will be: $(Pipeline.Workspace)/drop/azure-vmss/cloud-init.txt
+                
+                FILE_PATH="$(Pipeline.Workspace)/drop/azure-vmss/cloud-init.txt"
+                
+                echo "Updating VMSS with file from: $FILE_PATH"
+                
+                az vmss create \
                   --resource-group POC-AG \
-                  --name devops-vmss \
-                  --instance-ids "*"
+                  --name devops-vmss01 \
+                  --image UbuntuLTS \
+                  --custom-data $FILE_PATH \
+                  --vm-sku Standard_B2ls_v2 \
+                  --instance-count 1
