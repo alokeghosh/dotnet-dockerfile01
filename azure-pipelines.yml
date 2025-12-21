@@ -104,7 +104,7 @@ stages:
                   --provision-after-extensions "['HealthExtension', 'DependencyAgent']" \
                   --force-update-tag $(date +%s) \
                   --settings "{
-                    \"commandToExecute\": \"docker stop myapp || true && docker rm myapp || true && docker pull $IMAGE && docker run -d --name myapp -p 80:80 --restart always $IMAGE\"
+                    \"commandToExecute\": \"docker stop  my-web-app || true && docker rm my-web-app || true && docker pull $IMAGE && docker run -d --name my-web-app -p 80:80 --restart always $IMAGE\"
                   }"
 
                 echo "Triggering instance upgrade..."
