@@ -101,6 +101,7 @@ stages:
                   --name customScript \
                   --publisher Microsoft.Azure.Extensions \
                   --version 2.1 \
+                  --provision-after-extensions "['HealthExtension', 'DependencyAgent']" \
                   --force-update-tag $(date +%s) \
                   --settings "{
                     \"commandToExecute\": \"docker stop myapp || true && docker rm myapp || true && docker pull $IMAGE && docker run -d --name myapp -p 80:80 --restart always $IMAGE\"
