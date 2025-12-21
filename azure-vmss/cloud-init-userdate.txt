@@ -1,0 +1,35 @@
+#!/bin/bash
+
+# 1. Update system and install Docker
+sudo apt-get update
+sudo apt-get install -y docker.io
+sudo systemctl start docker
+sudo systemctl enable docker
+
+# 2. Login to Azure Container Registry (ACR)
+# We use the VM's Managed Identity to get a temporary access token.
+# This avoids hardcoding passwords in the script.
+echo "Logging into ACR..."
+#TOKEN=$(curl -s 'http://169.254.169.254/metadata/identity/oauth2/token?api-version=2018-02-01&resource=https://management.azure.com/' -H Metadata:true | jq -r '.access_token')
+
+# Note: '00000000-0000-0000-0000-000000000000' is the standard user ID for token-based login
+#docker login myregistry.azurecr.io -u 00000000-0000-0000-0000-000000000000 -p $TOKEN
+docker login globalacrdc.azurecr.io -u 3ad22b0e-3e4d-487a-9496-88024a3fe4de -p Dh28Q~nFrcK.IQqgcxrm5xOwN9ZchFqKrE3BraI9
+
+# 3. Pull the image
+echo "Pulling image..."
+#docker pull myregistry.azurecr.io/myapp:v1
+docker pull globalacrdc.azurecr.io/alokeghoshdotnetdockerfile:<tag>
+
+# 4. Run the container
+# -d: Run in background
+# -p: Map host port 80 to container port 80
+# --restart: Ensure container starts if the VM reboots
+echo "Starting container..."
+docker run -d -p 80:80 globalacrdc.azurecr.io/alokeghoshdotnetdockerfile:<tag>
+
+#docker run -d \
+#  --name my-web-app \
+#  --restart always \
+#  -p 80:80 \
+#  myregistry.azurecr.io/myapp:v1
