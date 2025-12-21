@@ -92,17 +92,19 @@ stages:
               scriptType: 'bash'
               scriptLocation: 'inlineScript'
               inlineScript: |
-                # Note: Artifacts are downloaded into $(Pipeline.Workspace)/<artifactName>
-                # The path will be: $(Pipeline.Workspace)/drop/azure-vmss/cloud-init.txt
-                
                 FILE_PATH="$(Pipeline.Workspace)/drop/azure-vmss/cloud-init.txt"
-                
-                echo "Updating VMSS with file from: $FILE_PATH"
-                
-                az vmss create \
-                  --resource-group POC-AG \
-                  --name devops-vmss01 \
-                  --image Ubuntu2404 \
-                  --custom-data $FILE_PATH \
-                  --vm-sku Standard_D2s_v5 \
-                  --instance-count 1
+                RG_NAME="POC-AG"
+                VMSS_NAME="devops-vmss01"
+
+                echo "Step 1: Updating VMSS Model with new Custom Data from: $FILE_PATH"
+                az vmss update \
+                  --resource-group $RG_NAME \
+                  --name $VMSS_NAME \
+                  --set virtualMachineProfile.osProfile.customData=$(base64 -w 0 < $FILE_PATH)
+
+                echo "Step 2: Triggering upgrade on all instances to apply new image tag"
+                # Using '*' updates all instances. In production, consider a rolling batch.
+                az vmss update-instances \
+                  --resource-group $RG_NAME \
+                  --name $VMSS_NAME \
+                  --instance-ids "*"
