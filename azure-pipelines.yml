@@ -36,6 +36,30 @@ stages:
       displayName: Cleanup local image
       inputs:
         script: 'docker rmi -f $(containerRegistry)/$(imageRepository):$(Build.BuildId)'
+    # 1. Update the tag
+    - task: Bash@3
+      displayName: 'Update Tag'
+      inputs:
+        targetType: 'inline'
+        script: |
+          # Ensure the path matches your repo exactly
+          sed -i "s|globalacrdc.azurecr.io/alokeghoshdotnetdockerfile.*|globalacrdc.azurecr.io/alokeghoshdotnetdockerfile:$(Build.BuildId)|g" azure-vmss/cloud-init.txt 
+
+    # 2. Copy the file (Use a simpler TargetFolder)
+    - task: CopyFiles@2
+      displayName: 'Copy to Staging'
+      inputs:
+        SourceFolder: '$(System.DefaultWorkingDirectory)'
+        Contents: 'azure-vmss/cloud-init.txt'
+        TargetFolder: '$(Build.ArtifactStagingDirectory)' # This is the standard path
+
+    # 3. Publish (The name 'drop' is defined here)
+    - task: PublishBuildArtifacts@1
+      displayName: 'Publish drop'
+      inputs:
+        PathtoPublish: '$(Build.ArtifactStagingDirectory)'
+        ArtifactName: 'drop'
+        publishLocation: 'Container'
 
 - stage: Deploy_in_vmss
   displayName: "Release Stage"
@@ -66,6 +90,8 @@ stages:
                 RG_NAME="POC-AG"
                 VMSS_NAME="devops-vmss"
                 IMAGE="globalacrdc.azurecr.io/alokeghoshdotnetdockerfile:$(Build.BuildId)"
+                echo "Listing files in Workspace:"
+                find $(Pipeline.Workspace) -name "cloud-init.txt"
 
                 echo "Updating VMSS Extension with image: $IMAGE"
 
