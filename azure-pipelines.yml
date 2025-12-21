@@ -43,14 +43,14 @@ stages:
         targetType: 'inline'
         script: |
           # Ensure the path matches your repo exactly
-          sed -i "s|globalacrdc.azurecr.io/alokeghoshdotnetdockerfile.*|globalacrdc.azurecr.io/alokeghoshdotnetdockerfile:$(Build.BuildId)|g" azure-vmss/cloud-init.txt 
+          sed -i "s|globalacrdc.azurecr.io/alokeghoshdotnetdockerfile.*|globalacrdc.azurecr.io/alokeghoshdotnetdockerfile:$(Build.BuildId)|g" azure-vmss/cloud-init-userdata.txt 
 
     # 2. Copy the file (Use a simpler TargetFolder)
     - task: CopyFiles@2
       displayName: 'Copy to Staging'
       inputs:
         SourceFolder: '$(System.DefaultWorkingDirectory)'
-        Contents: 'azure-vmss/cloud-init.txt'
+        Contents: 'azure-vmss/cloud-init-userdata.txt'
         TargetFolder: '$(Build.ArtifactStagingDirectory)' # This is the standard path
 
     # 3. Publish (The name 'drop' is defined here)
@@ -91,7 +91,7 @@ stages:
                 VMSS_NAME="devops-vmss"
                 IMAGE="globalacrdc.azurecr.io/alokeghoshdotnetdockerfile:$(Build.BuildId)"
                 echo "Listing files in Workspace:"
-                find $(Pipeline.Workspace) -name "cloud-init.txt"
+                find $(Pipeline.Workspace) -name "cloud-init-userdata.txt"
 
                 echo "Updating VMSS Extension with image: $IMAGE"
 
