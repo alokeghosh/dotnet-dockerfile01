@@ -49,9 +49,12 @@ stages:
       runOnce:
         deploy:
           steps:
-          - download: current
-            artifact: drop
-
+          - task: DownloadBuildArtifacts@0
+            inputs:
+              buildType: 'current'
+              downloadType: 'single'
+              artifactName: 'drop'
+              downloadPath: '$(Pipeline.Workspace)'
           - task: AzureCLI@2
             displayName: 'Update VMSS via Custom Script Extension'
             inputs:
