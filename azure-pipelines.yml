@@ -99,7 +99,7 @@ stages:
                 
                 FILE_PATH="$(Pipeline.Workspace)/drop/azure-vmss/cloud-init.txt"
                 
-                echo "Updating VMSS with file from: $FILE_PATH"
+                echo "Updating VMSS custom data with file from: $FILE_PATH"
                 
                 az vmss update \
                   --resource-group POC-AG \
