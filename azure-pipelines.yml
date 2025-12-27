@@ -43,6 +43,22 @@ stages:
       inputs:
         script: 'docker rmi -f globalacrdc.azurecr.io/alokeghoshdotnetdockerfile:$(Build.BuildId)'
 
+# 1. Fetch the secrets from azure key vaults 
+    - task: AzureKeyVault@2
+      inputs:
+        azureSubscription: 'Microsoft Azure Sponsorship(0bc60bf9-dd50-43e4-a755-be125a9042d4)'
+        KeyVaultName: 'devops-vmss-keyvault'
+        SecretsFilter: 'pocsample-sp,pocsample-sp-password'
+        RunAsPreJob: false
+
+# 2. Replace the tokens in your cloud-init.txt file
+    - task: replacetokens@6
+      inputs:
+        root: '$(System.DefaultWorkingDirectory)'
+        sources: 'azure-vmss/cloud-init.txt'
+        tokenPrefix: '#{'
+        tokenSuffix: '}#'
+
 ## 1. Update the tag in the file
     - task: Bash@3
       displayName: update the  build tag number in cloud-init.txt 
