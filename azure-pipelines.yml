@@ -126,4 +126,4 @@ stages:
                 echo "scale down instances to apply new configuration..."
                 az vmss scale --resource-group POC-AG --name devops-vmss --new-capacity 0
                 echo "scale up instances to apply new configuration..."
-                az vmss scale --resource-group POC-AG --name devops-vmss --new-capacity 2
+                az vmss scale --resource-group POC-AG --name devops-vmss --new-capacity 1
